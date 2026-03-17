@@ -1,5 +1,5 @@
 import json
-from backend.syllabus import SYLLABUS, ALL_SKILLS
+from syllabus import SYLLABUS
 
 
 def build_prompt(assignment_text: str) -> str:
