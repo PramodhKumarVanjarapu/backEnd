@@ -47,9 +47,16 @@ STEP 2 — Coverage Matching (CRITICAL)
 
 STRICT RULES (NO EXCEPTIONS):
 
-A skill is COVERED ONLY IF:
-1. It EXACTLY appears in syllabus, OR
-2. It matches equivalence below
+A skill is COVERED if:
+
+1. Exact match exists in syllabus, OR
+2. Same concept exists with different wording, OR
+3. Clearly taught under a related topic
+
+IMPORTANT:
+- Normalize naming differences (Node.js vs Node JS)
+- Treat synonyms as SAME skill
+- Do NOT mark as missing if concept is clearly covered
 
 ❌ DO NOT:
 - Assume
@@ -148,6 +155,15 @@ OUTPUT (STRICT JSON ONLY)
   "verdict": "",
   "recommendation": ""
 }}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LIMIT OUTPUT SIZE (CRITICAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- required_skills: maximum 20
+- covered_skills: maximum 20
+- missing_skills: maximum 20
+- Keep response concise
 
 CONSTRAINTS:
 - covered + missing = required

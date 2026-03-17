@@ -1,6 +1,9 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
+from utils.skill_normalizer import normalize_skill
+from utils.skill_mapper import map_skill
+from syllabus import ALL_SKILLS
 import json
 import re
 
@@ -10,6 +13,17 @@ from services.extractors.pdf_extractor import extract_text_from_pdf
 from services.extractors.docx_extractor import extract_text_from_docx
 from services.extractors.googledoc_extractor import extract_text_from_googledoc
 from services.extractors.notion_extractor import extract_text_from_notion
+
+
+def split_skills(skills):
+    result = []
+    for skill in skills:
+        if " or " in skill.lower():
+            result.extend([s.strip() for s in skill.split(" or ")])
+        else:
+            result.append(skill)
+    return result
+
 
 app = FastAPI(
     title="Assignment Doability Checker",
@@ -95,8 +109,13 @@ async def evaluate(
         if json_match:
             clean = json_match.group(0)
         result = json.loads(clean)
-    except Exception:
-        return {"error": "Could not parse AI response", "raw": raw_result}
+    except Exception as e:
+        print("❌ JSON Parse Error:", e)
+        print("Raw response:", raw_result)
+        return {
+        "error": "Could not parse AI response",
+        "raw": raw_result[:1000]  # avoid huge logs
+        }
 
     # Validate and fix score — must always be a multiple of 10
     score = result.get("doability_score", 0)
@@ -112,9 +131,28 @@ async def evaluate(
 
     # Validate skill list consistency:
     # covered + missing must equal required (catch LLM omissions)
-    required = set(result.get("required_skills", []))
-    covered = set(result.get("covered_skills", []))
-    missing = set(result.get("missing_skills", []))
+    # required = set(result.get("required_skills", []))
+    # covered = set(result.get("covered_skills", []))
+    # missing = set(result.get("missing_skills", []))
+
+    required_raw = result.get("required_skills", [])
+    covered_raw = result.get("covered_skills", [])
+
+    # Step 1: split combined skills
+    required_raw = split_skills(required_raw)
+
+    # Step 2: normalize + map
+    required = set(map_skill(s, ALL_SKILLS) for s in required_raw)
+    covered = set(map_skill(s, ALL_SKILLS) for s in covered_raw)
+
+    # Step 3: recompute missing
+    missing = required - covered
+
+    # Step 4: update result
+    result["required_skills"] = list(required)
+    result["covered_skills"] = list(covered)
+    result["missing_skills"] = list(missing)
+    
 
     if covered | missing != required:
         # Recompute missing from what the LLM actually marked as covered

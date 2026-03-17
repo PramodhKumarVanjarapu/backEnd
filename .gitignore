@@ -1,0 +1,36 @@
+# Byte-code files
+__pycache__
+*.pyc
+##
+# Virtual environment
+##
+.venv
+venv
+env
+env3.*
+##
+# Editor/IDE-specific files
+##
+.idea
+.vscode
+.mypy_cache
+.pytest_cache
+*.swp
+*~
+
+##
+# Build artifacts and coverage
+##
+dist
+build
+site
+htmlcov
+.coverage*
+coverage.xml
+##
+# Environment variables and databases (security best practice)
+##
+.env
+log.txt
+*.db
+test.db

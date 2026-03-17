@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
+print(os.getenv("MISTRAL_API_KEY"))
 
 
 def evaluate_assignment(prompt: str) -> str:
@@ -16,7 +17,7 @@ def evaluate_assignment(prompt: str) -> str:
                 "content": prompt
             }
         ],
-        temperature=0,      # deterministic — same result every time
-        max_tokens=1000,
+        temperature=0,      
+        max_tokens=3000,
     )
     return response.choices[0].message.content
